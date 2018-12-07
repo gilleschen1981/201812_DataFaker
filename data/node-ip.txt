@@ -1,0 +1,31 @@
+{
+	"clone": 2,
+	"ciMap": {
+		"node": {
+			"className": "node",
+			"cloneNumber": 1,
+			"offset": 0,
+			"name": "node",
+			"attributes_v": {
+				"name": "node"
+			},
+			"attributes_s": {}
+		},
+		"ip": {
+			"className": "ip_address",
+			"cloneNumber": 3,
+			"offset": 0,
+			"name": "ip",
+			"attributes_v": {
+				"name": "1.1.1.1"
+			},
+			"attributes_s": {}
+		}
+	},
+	"relationList": [{
+			"relationType": "containment",
+			"end1Id": "node",
+			"end2Id": "ip"
+		}
+	]
+}
