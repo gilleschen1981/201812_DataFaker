@@ -10,6 +10,7 @@ public class CIHolder implements Serializable{
     private String className;
     private Integer cloneNumber = 1;
     private Integer offset = 0;
+    private Integer step = 1;
     // 用来作为topo当中的唯一标识符，不管name是v还是s，都用name的根形式。
     private String name;
 
@@ -27,6 +28,14 @@ public class CIHolder implements Serializable{
 
     public void setOffset(Integer offset) {
         this.offset = offset;
+    }
+
+    public Integer getStep() {
+        return step;
+    }
+
+    public void setStep(Integer step) {
+        this.step = step;
     }
 
     // <attribute name, attribute value>

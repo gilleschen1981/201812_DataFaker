@@ -4,6 +4,7 @@ import com.hp.ucmdb.api.*;
 import com.hp.ucmdb.api.classmodel.ClassModelService;
 import com.hp.ucmdb.api.topology.*;
 import com.hp.ucmdb.api.types.CI;
+import com.hp.ucmdb.api.types.Relation;
 import com.hp.ucmdb.api.types.UcmdbId;
 import com.microfocus.ucmdb.server.classmodel.ClassModelLoader;
 import com.microfocus.ucmdb.server.fakedata.cache.CICacheItem;
@@ -40,11 +41,11 @@ public class TopoGenerator {
         for(int topoCount = 1; topoCount <= topo.getClone(); topoCount++){
             TopologyModificationData data = service.getFactory().createTopologyModificationData();
             List<CI> generatedCIs = generateTopo(topo.getCiMap(), topo.getRelationList(), topoCount, data);
-            service.createGracefully(data, CreateGracefullyMode.UPDATE_EXISTING);
-
+//            service.createGracefully(data, CreateGracefullyMode.UPDATE_EXISTING);
+            service.create(data, CreateMode.UPDATE_EXISTING);
             logger.info("[CI generated]");
             for(CI resultCI : generatedCIs){
-                logger.info("{Type: " + resultCI.getType() + "}, {ID: " + resultCI.getId() + "}");
+                logger.info("{Type: " + resultCI.getType() + "}, {ID: " + resultCI.getId().getAsString() + "}");
                 CreatedCICache.getInstance().addCacheItem(resultCI.getType(), resultCI.getId().getAsString());
             }
             CreatedCICache.getInstance().saveCache();
@@ -64,7 +65,7 @@ public class TopoGenerator {
                 CI newCI = data.addCI(ci.getClassName());
                 if(ci.getAttributes_v() != null){
                     for(Map.Entry<String, String> attrEntry :ci.getAttributes_v().entrySet()) {
-                        int count = (topoCount - 1) * ci.getCloneNumber() + ciCount;
+                        int count = (topoCount - 1) * ci.getCloneNumber() * ci.getStep() + ciCount * ci.getStep() + ci.getOffset()  ;
                         newCI.setStringProperty(attrEntry.getKey(), IncrementUtil.generateIncrementalValue(attrEntry.getValue(), count));
                     }
                  }
@@ -104,7 +105,12 @@ public class TopoGenerator {
             for(int i = 0; i < source.size(); i++){
                 for(int s = 0; s < scale; s++){
                     int count = (int) Math.floor(i*scale);
-                    data.addRelation(relationHolder.getRelationType(), source.get(i), target.get(count + s));
+                    Relation relation = data.addRelation(relationHolder.getRelationType(), source.get(i), target.get(count + s));
+                    if(relationHolder.getAttributes_s() != null){
+                        for(Map.Entry<String,String> attrEntry : relationHolder.getAttributes_s().entrySet()){
+                            relation.setStringProperty(attrEntry.getKey(), attrEntry.getValue());
+                        }
+                    }
                 }
             }
 
@@ -120,6 +126,15 @@ public class TopoGenerator {
         }
         service.deleteGracefully(data);
         CreatedCICache.getInstance().clearCache();
+    }
+
+
+    public void processFolder(TopologyUpdateService topologyUpdateService, String path){
+        File folder = new File(path);
+        for (final File file : folder.listFiles()) {
+            TopoHolder topoHolder = CIJsonInterpreter.loadJson(file);
+            TopoGenerator.getInstance().insertTopologyFromTopoHolder(topologyUpdateService, topoHolder);
+        }
     }
 
 
@@ -142,8 +157,13 @@ public class TopoGenerator {
         UcmdbService service = serviceProvider.connect(credentials,clientContext);
         TopologyUpdateService topologyUpdateService = service.getTopologyUpdateService();
 
-        TopoHolder topoHolder = CIJsonInterpreter.loadJson(new File("1.txt"));
+        TopoHolder topoHolder = CIJsonInterpreter.loadJson(new File("data\\nodeDependency.txt"));
         TopoGenerator.getInstance().insertTopologyFromTopoHolder(topologyUpdateService, topoHolder);
+
+//        TopoGenerator.getInstance().processFolder(topologyUpdateService, "data\\ServiceMap\\");
+
+
+
 
 
     }

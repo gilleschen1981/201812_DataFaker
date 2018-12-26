@@ -14,14 +14,10 @@ import java.util.List;
 
 public class ClassModelLoader {
     public static void main(String[] args) {
-        // parameter analysis
-        String hostname = args[0];
+        String hostname = "16.187.189.78";
         int port = 8443;
-        String username = args[1];
-        String password = args[2];
-
-        // link to UCMDB
-        //Creating a service provider for a given UCMDB server address
+        String username = "admin";
+        String password = "Admin_1234";
         UcmdbServiceProvider serviceProvider = null;
         try {
             serviceProvider = UcmdbServiceFactory.getServiceProvider("https", hostname, port);
@@ -29,7 +25,7 @@ public class ClassModelLoader {
             e.printStackTrace();
         }
         //Creating a client context according to the name of this integration (for auditing)
-        ClientContext clientContext = serviceProvider.createClientContext("ClassModelLoader");
+        ClientContext clientContext = serviceProvider.createClientContext("TestTopo");
         //Creating the credentials for authentication
         Credentials credentials = serviceProvider.createCredentials(username, password);
         // Creating the connection object
